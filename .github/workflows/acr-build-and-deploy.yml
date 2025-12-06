@@ -60,7 +60,10 @@ jobs:
           inlineScript: |
             az account show
             IMAGE="${{ env.ACR_LOGIN_SERVER }}/internship1/internship1-dev:ci-${{ github.run_id }}"
-            az containerapp update \
-              --name ${{ env.CONTAINERAPP_NAME }} \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --image $IMAGE
+            for attempt in {1..5}; do
+              echo "Deployment attempt $attempt of 5..."
+              az containerapp update \
+                --name ${{ env.CONTAINERAPP_NAME }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --image $IMAGE && echo "Deployment successful!" && break || ([ $attempt -lt 5 ] && echo "Waiting 30 seconds before retry..." && sleep 30 || echo "Deployment failed after 5 attempts")
+            done
