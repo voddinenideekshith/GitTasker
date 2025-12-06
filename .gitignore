@@ -30,3 +30,20 @@ starter-extract/
 *.zip
 npm-debug.log
 .DS_Store
+.azure
+
+# Ignore local Azure service principal credentials and other secrets
+azure-sp.json
+secrets.json
+*.env
+env.json
+current-env.json
+updated-app.json
+updated.json
+app_after_patch.json
+app.json
+
+# Build and IDE artifacts
+target/
+acr-context/
+.mvn/

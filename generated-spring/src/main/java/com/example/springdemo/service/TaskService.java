@@ -1,3 +1,4 @@
+
 package com.example.springdemo.service;
 
 import com.example.springdemo.domain.Task;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.io.IOException;
 
 @Service
 public class TaskService {
@@ -27,48 +27,78 @@ public class TaskService {
 
     @Cacheable(value = "tasks", key = "'list'")
     public List<Task> listAll() {
-        return repository.findAll();
+        try {
+            return repository.findAll();
+        } catch (Exception e) {
+            // Log error and fallback
+            System.err.println("Redis cache error (listAll): " + e.getMessage());
+            return repository.findAll();
+        }
     }
 
     @Cacheable(value = "tasks", key = "#id")
-    public Optional<Task> findById(Long id) {
-        return repository.findById(id);
+    public Optional<Task> findById(String id) {
+        try {
+            return repository.findById(id);
+        } catch (Exception e) {
+            System.err.println("Redis cache error (findById): " + e.getMessage());
+            return repository.findById(id);
+        }
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
     public Task create(TaskDto dto, String owner) throws Exception {
-        // convert dto to json
-        String json = mapper.writeValueAsString(dto);
-        String cid = ipfsService.uploadJson(json);
-        Task t = new Task(cid, dto.getTitle(), dto.getDescription(), Instant.now(), owner);
-        return repository.save(t);
+        try {
+            String json = mapper.writeValueAsString(dto);
+            String cid = ipfsService.uploadJson(json);
+            Task t = new Task(cid, dto.getTitle(), dto.getDescription(), Instant.now(), owner);
+            return repository.save(t);
+        } catch (Exception e) {
+            System.err.println("Redis cache error (create): " + e.getMessage());
+            throw e;
+        }
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
-    public Optional<Task> update(Long id, TaskDto dto) throws Exception {
-        return repository.findById(id).map(existing -> {
-            try {
-                String json = mapper.writeValueAsString(dto);
-                String cid = ipfsService.uploadJson(json);
-                existing.setCid(cid);
-                existing.setTitle(dto.getTitle());
-                existing.setDescription(dto.getDescription());
-                existing.setUpdatedAt(Instant.now());
-                return repository.save(existing);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public Optional<Task> update(String id, TaskDto dto) throws Exception {
+        try {
+            return repository.findById(id).map(existing -> {
+                try {
+                    String json = mapper.writeValueAsString(dto);
+                    String cid = ipfsService.uploadJson(json);
+                    existing.setCid(cid);
+                    existing.setTitle(dto.getTitle());
+                    existing.setDescription(dto.getDescription());
+                    existing.setUpdatedAt(Instant.now());
+                    return repository.save(existing);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Redis cache error (update): " + e.getMessage());
+            throw e;
+        }
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
-    public void delete(Long id) {
-        repository.deleteById(id);
+    public void delete(String id) {
+        try {
+            repository.deleteById(id);
+        } catch (Exception e) {
+            System.err.println("Redis cache error (delete): " + e.getMessage());
+            throw e;
+        }
     }
 
     @Cacheable(value = "ipfs-tasks", key = "#cid")
-    public Task getTask(String cid) throws IOException {
-        String json = ipfsService.fetchJson(cid);
-        return mapper.readValue(json, Task.class);
+    public Task getTask(String cid) throws Exception {
+        try {
+            String json = ipfsService.fetchJson(cid);
+            return mapper.readValue(json, Task.class);
+        } catch (Exception e) {
+            System.err.println("Redis cache error (getTask): " + e.getMessage());
+            throw e;
+        }
     }
 }

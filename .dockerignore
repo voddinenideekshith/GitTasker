@@ -1,0 +1,16 @@
+# Exclude build artifacts and local JDK directories
+target
+**/target
+*.iml
+*.log
+.git
+.gitignore
+java-1.8.0-openjdk-*
+java-1.8.0-openjdk-1.8.0.392-1.b08.redhat.windows.x86_64
+libs/**/target
+starter-extract
+generated-spring/test-classes
+generated-spring/**/target
+node_modules
+.vscode
+.DS_Store

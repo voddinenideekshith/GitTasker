@@ -24,10 +24,16 @@ public class TaskController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        List<Task> tasks = taskService.listAll();
-        model.addAttribute("tasks", tasks);
-        return "tasks/index";
+    public String list(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            List<Task> tasks = taskService.listAll();
+            model.addAttribute("tasks", tasks);
+            return "tasks/index";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to load tasks: " + e.getMessage());
+            model.addAttribute("tasks", List.of());
+            return "tasks/index";
+        }
     }
 
     @GetMapping("/new")
@@ -54,7 +60,7 @@ public class TaskController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editForm(@PathVariable String id, Model model, RedirectAttributes redirectAttributes) {
         return taskService.findById(id)
                 .map(task -> {
                     TaskDto dto = new TaskDto();
@@ -72,7 +78,7 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/update")
-    public String updateFromForm(@PathVariable Long id,
+    public String updateFromForm(@PathVariable String id,
                                  @ModelAttribute TaskDto dto,
                                  RedirectAttributes redirectAttributes) {
         try {
@@ -94,7 +100,7 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteFromForm(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteFromForm(@PathVariable String id, RedirectAttributes redirectAttributes) {
         try {
             taskService.delete(id);
             redirectAttributes.addFlashAttribute("message", 
@@ -108,8 +114,12 @@ public class TaskController {
 
     @GetMapping("/api")
     @ResponseBody
-    public List<Task> listApi() {
-        return taskService.listAll();
+    public ResponseEntity<?> listApi() {
+        try {
+            return ResponseEntity.ok(taskService.listAll());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to load tasks", e.getMessage()));
+        }
     }
 
     @PostMapping("/api")
@@ -122,24 +132,36 @@ public class TaskController {
 
     @GetMapping("/api/ipfs/{cid}")
     @ResponseBody
-    public ResponseEntity<Task> getTaskByCid(@PathVariable String cid) throws Exception {
-        Task task = taskService.getTask(cid);
-        return ResponseEntity.ok(task);
+    public ResponseEntity<?> getTaskByCid(@PathVariable String cid) {
+        try {
+            Task task = taskService.getTask(cid);
+            return ResponseEntity.ok(task);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to fetch task from IPFS", e.getMessage()));
+        }
     }
 
     @PutMapping("/api/{id}")
     @ResponseBody
-    public ResponseEntity<?> updateApi(@PathVariable Long id, @RequestBody TaskDto dto) throws Exception {
-        return taskService.update(id, dto)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> updateApi(@PathVariable String id, @RequestBody TaskDto dto) {
+        try {
+            return taskService.update(id, dto)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to update task", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/api/{id}")
     @ResponseBody
-    public ResponseEntity<Void> deleteApi(@PathVariable Long id) {
-        taskService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteApi(@PathVariable String id) {
+        try {
+            taskService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to delete task", e.getMessage()));
+        }
     }
 
     // Global Exception Handler for UI

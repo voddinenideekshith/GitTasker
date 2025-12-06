@@ -1,0 +1,44 @@
+name: ACR Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+env:
+  RESOURCE_GROUP: rg-dev
+  CONTAINERAPP_NAME: internship1
+  ACR_NAME: cruxojaw7gyw4hu
+  ACR_LOGIN_SERVER: ${{ env.ACR_NAME }}.azurecr.io
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+
+      - name: Build and push image from acr-context
+        uses: docker/build-push-action@v5
+        with:
+          context: acr-context
+          push: true
+          tags: ${{ env.ACR_LOGIN_SERVER }}/internship1/internship1-dev:ci-${{ github.run_id }}
+
+      - name: Deploy image to Azure Container App
+        uses: azure/cli@v1
+        with:
+          inlineScript: |
+            az account show
+            IMAGE="${{ env.ACR_LOGIN_SERVER }}/internship1/internship1-dev:ci-${{ github.run_id }}"
+            az containerapp update --name ${{ env.CONTAINERAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --set properties.configuration.template.containers[0].image="$IMAGE" properties.configuration.template.revisionSuffix="ci-${{ github.run_id }}"
