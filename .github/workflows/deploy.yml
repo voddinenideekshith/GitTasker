@@ -39,6 +39,7 @@ jobs:
         run: |
           mkdir -p target
           cp generated-spring/target/*.jar target/app.jar
+        shell: bash
 
       - name: Login to Azure
         uses: azure/login@v1
