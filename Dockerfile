@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu
 WORKDIR /app
 
 # Copy built jar from Maven target directory
-COPY target/internship1-0.0.1-SNAPSHOT.jar app.jar
+COPY generated-spring/target/*.jar app.jar
 
 # Expose port 8080 (matches Azure Container App config)
 EXPOSE 8080
