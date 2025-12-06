@@ -60,4 +60,7 @@ jobs:
           inlineScript: |
             az account show
             IMAGE="${{ env.ACR_LOGIN_SERVER }}/internship1/internship1-dev:ci-${{ github.run_id }}"
-            az containerapp update --name ${{ env.CONTAINERAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --set properties.configuration.template.containers[0].image="$IMAGE" properties.configuration.template.revisionSuffix="ci-${{ github.run_id }}"
+            az containerapp update \
+              --name ${{ env.CONTAINERAPP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image $IMAGE
