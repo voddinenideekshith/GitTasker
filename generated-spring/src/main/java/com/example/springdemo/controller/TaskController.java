@@ -61,7 +61,8 @@ public class TaskController {
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable String id, Model model, RedirectAttributes redirectAttributes) {
-        return taskService.findById(id)
+        Long longId = Long.valueOf(id);
+        return taskService.findById(longId)
                 .map(task -> {
                     TaskDto dto = new TaskDto();
                     dto.setTitle(task.getTitle());
@@ -82,7 +83,8 @@ public class TaskController {
                                  @ModelAttribute TaskDto dto,
                                  RedirectAttributes redirectAttributes) {
         try {
-            return taskService.update(id, dto)
+            Long longId = Long.valueOf(id);
+            return taskService.update(longId, dto)
                     .map(updated -> {
                         redirectAttributes.addFlashAttribute("message", 
                             "Task updated successfully! New CID: " + updated.getCid());
@@ -102,7 +104,8 @@ public class TaskController {
     @PostMapping("/{id}/delete")
     public String deleteFromForm(@PathVariable String id, RedirectAttributes redirectAttributes) {
         try {
-            taskService.delete(id);
+            Long longId = Long.valueOf(id);
+            taskService.delete(longId);
             redirectAttributes.addFlashAttribute("message", 
                 "Task deleted successfully. IPFS data remains immutable.");
         } catch (Exception e) {
@@ -145,7 +148,8 @@ public class TaskController {
     @ResponseBody
     public ResponseEntity<?> updateApi(@PathVariable String id, @RequestBody TaskDto dto) {
         try {
-            return taskService.update(id, dto)
+            Long longId = Long.valueOf(id);
+            return taskService.update(longId, dto)
                     .<ResponseEntity<?>>map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -157,7 +161,8 @@ public class TaskController {
     @ResponseBody
     public ResponseEntity<?> deleteApi(@PathVariable String id) {
         try {
-            taskService.delete(id);
+            Long longId = Long.valueOf(id);
+            taskService.delete(longId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ErrorResponse("Failed to delete task", e.getMessage()));
