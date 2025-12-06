@@ -67,11 +67,14 @@ jobs:
         run: |
           IMAGE=${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}
           REVISION_SUFFIX=${GITHUB_SHA::7}
-          az containerapp update \
-            --name ${{ secrets.CONTAINERAPP_NAME }} \
-            --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --image $IMAGE \
-            --revision-suffix $REVISION_SUFFIX
+          for attempt in {1..5}; do
+            echo "Deployment attempt $attempt of 5..."
+            az containerapp update \
+              --name ${{ secrets.CONTAINERAPP_NAME }} \
+              --resource-group ${{ secrets.RESOURCE_GROUP }} \
+              --image $IMAGE \
+              --revision-suffix $REVISION_SUFFIX && echo "Deployment successful!" && break || ([ $attempt -lt 5 ] && echo "Waiting 30 seconds before retry..." && sleep 30 || echo "Deployment failed after 5 attempts")
+          done
 
       - name: Show update result
         run: az containerapp show --name ${{ secrets.CONTAINERAPP_NAME }} --resource-group ${{ secrets.RESOURCE_GROUP }}
