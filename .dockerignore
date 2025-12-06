@@ -1,6 +1,5 @@
 # Exclude build artifacts and local JDK directories
-target
-**/target
+# Note: We need target/ at root for Docker build (target/app.jar)
 *.iml
 *.log
 .git
