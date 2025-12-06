@@ -9,7 +9,7 @@ env:
   RESOURCE_GROUP: rg-dev
   CONTAINERAPP_NAME: internship1
   ACR_NAME: cruxojaw7gyw4hu
-  ACR_LOGIN_SERVER: ${{ env.ACR_NAME }}.azurecr.io
+  ACR_LOGIN_SERVER: cruxojaw7gyw4hu.azurecr.io
 
 jobs:
   build-and-deploy:
