@@ -35,7 +35,7 @@ public class TaskService {
     }
 
     @Cacheable(value = "tasks", key = "#id")
-    public Optional<Task> findById(Long id) {
+    public Optional<Task> findById(String id) {
         try {
             return repository.findById(id);
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class TaskService {
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
-    public Optional<Task> update(Long id, TaskDto dto) throws Exception {
+    public Optional<Task> update(String id, TaskDto dto) throws Exception {
         try {
             return repository.findById(id).map(existing -> {
                 try {
@@ -85,7 +85,7 @@ public class TaskService {
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
-    public void delete(Long id) {
+    public void delete(String id) {
         try {
             repository.deleteById(id);
         } catch (Exception e) {

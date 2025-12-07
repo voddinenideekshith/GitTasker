@@ -33,6 +33,17 @@
             <span class="navbar-text text-white">
                 <i class="bi bi-cloud"></i> IPFS Decentralized Storage
             </span>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 text-white">
+                    <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="Avatar" width="32" height="32" class="rounded-circle">
+                    <span th:text="${userName != null ? userName : 'Guest'}"></span>
+                    <form th:if="${isAuthenticated}" action="/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -72,7 +83,7 @@
                                     <i class="bi bi-database"></i> IPFS CID
                                 </th>
                                 <th scope="col">Owner</th>
-                                <th scope="col">Created</th>
+                                <th scope="col">IPFS</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Actions</th>
                             </tr>
@@ -99,14 +110,6 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary" th:text="${task.owner}"></span>
-                                </td>
-                                <td>
-                                    <small th:text="${#temporals.format(task.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
-                                    <div th:if="${task.updatedAt}">
-                                        <small class="text-muted">
-                                            Updated: <span th:text="${#temporals.format(task.updatedAt, 'yyyy-MM-dd HH:mm')}"></span>
-                                        </small>
-                                    </div>
                                 </td>
                                 <td>
                                     <span class="badge ipfs-badge">

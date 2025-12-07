@@ -7,7 +7,7 @@ on:
 
 env:
   RESOURCE_GROUP: rg-dev
-  CONTAINERAPP_NAME: internship1
+  CONTAINERAPP_NAME: GitTasker
   ACR_NAME: cruxojaw7gyw4hu
   ACR_LOGIN_SERVER: cruxojaw7gyw4hu.azurecr.io
 
@@ -28,12 +28,6 @@ jobs:
       - name: Build package (skip tests)
         run: mvn -B -DskipTests package
         working-directory: generated-spring
-
-      - name: Copy JAR to Docker context
-        run: |
-          mkdir -p target
-          cp generated-spring/target/*.jar target/app.jar
-        shell: bash
 
       - name: Login to Azure
         uses: azure/login@v1

@@ -24,14 +24,23 @@ public class TaskController {
     }
 
     @GetMapping
-    public String list(Model model, RedirectAttributes redirectAttributes) {
+    public String list(@AuthenticationPrincipal OAuth2User oauth2User, Model model) {
         try {
             List<Task> tasks = taskService.listAll();
             model.addAttribute("tasks", tasks);
+            model.addAttribute("isAuthenticated", oauth2User != null);
+            if (oauth2User != null) {
+                model.addAttribute("userName", oauth2User.getAttribute("login"));
+                model.addAttribute("avatarUrl", oauth2User.getAttribute("avatar_url"));
+            } else {
+                model.addAttribute("userName", "Guest");
+                model.addAttribute("avatarUrl", null);
+            }
             return "tasks/index";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to load tasks: " + e.getMessage());
             model.addAttribute("tasks", List.of());
+            model.addAttribute("error", "Database connection failed: " + e.getMessage());
+            model.addAttribute("isAuthenticated", false);
             return "tasks/index";
         }
     }
@@ -60,7 +69,7 @@ public class TaskController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editForm(@PathVariable String id, Model model, RedirectAttributes redirectAttributes) {
         return taskService.findById(id)
                 .map(task -> {
                     TaskDto dto = new TaskDto();
@@ -78,7 +87,7 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/update")
-    public String updateFromForm(@PathVariable Long id,
+    public String updateFromForm(@PathVariable String id,
                                  @ModelAttribute TaskDto dto,
                                  RedirectAttributes redirectAttributes) {
         try {
@@ -100,7 +109,7 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteFromForm(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteFromForm(@PathVariable String id, RedirectAttributes redirectAttributes) {
         try {
             taskService.delete(id);
             redirectAttributes.addFlashAttribute("message", 
@@ -143,7 +152,7 @@ public class TaskController {
 
     @PutMapping("/api/{id}")
     @ResponseBody
-    public ResponseEntity<?> updateApi(@PathVariable Long id, @RequestBody TaskDto dto) {
+    public ResponseEntity<?> updateApi(@PathVariable String id, @RequestBody TaskDto dto) {
         try {
             return taskService.update(id, dto)
                     .<ResponseEntity<?>>map(ResponseEntity::ok)
@@ -155,7 +164,7 @@ public class TaskController {
 
     @DeleteMapping("/api/{id}")
     @ResponseBody
-    public ResponseEntity<?> deleteApi(@PathVariable Long id) {
+    public ResponseEntity<?> deleteApi(@PathVariable String id) {
         try {
             taskService.delete(id);
             return ResponseEntity.noContent().build();

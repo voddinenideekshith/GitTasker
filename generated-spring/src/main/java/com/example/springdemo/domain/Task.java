@@ -1,7 +1,12 @@
 package com.example.springdemo.domain;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "tasks")
 public class Task {
-    private Long id;
+    @Id
+    private String id;
     private String title;
     private String description;
     private String cid;
@@ -10,7 +15,7 @@ public class Task {
 
     public Task() {}
 
-    public Task(Long id, String title, String description, String cid, String status, String owner) {
+    public Task(String id, String title, String description, String cid, String status, String owner) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -19,11 +24,11 @@ public class Task {
         this.owner = owner;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
