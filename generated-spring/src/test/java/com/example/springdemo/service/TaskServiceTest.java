@@ -34,12 +34,12 @@ class TaskServiceTest {
         TaskDto dto = new TaskDto();
         dto.setTitle("Test");
         dto.setDescription("Desc");
+        dto.setStatus("pending");
         String owner = "user";
         String cid = "cid123";
         when(ipfsService.add(anyString())).thenReturn(cid);
-        Task saved = new Task("1", dto.getTitle(), dto.getDescription(), cid, "pending", owner);
-        Task savedTask = repository.save(saved);
-        when(repository.save(any(Task.class))).thenReturn(savedTask);
+        Task saved = new Task("1", dto.getTitle(), dto.getDescription(), cid, dto.getStatus(), owner);
+        when(repository.save(any(Task.class))).thenReturn(saved);
         Task result = service.create(dto, owner);
         assertEquals(cid, result.getCid());
         assertEquals("Test", result.getTitle());
