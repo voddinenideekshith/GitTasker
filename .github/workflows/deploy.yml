@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  IMAGE_NAME: GitTasker
+  IMAGE_NAME: gittasker
 
 jobs:
   build-and-deploy:
